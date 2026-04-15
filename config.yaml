@@ -1,0 +1,190 @@
+snyk:
+  org_id: "00000000-0000-0000-0000-000000000000"  # Set via SNYK_ORG_ID env var
+  org_slug: "your-org-slug"
+  api_version: "2024-04-29"
+
+llm:
+  provider: "auto"           # auto | anthropic | gemini
+  gemini_model: "gemini-2.5-flash"
+  anthropic_model: "claude-sonnet-4-6"
+  max_retries: 2
+  timeout_seconds: 30
+
+git:
+  org: "your-github-org"    # Set via GIT_ORG env var
+  branch_prefix: "snyk-fix"
+  commit_author_name: "Snyk Auto-Fix"
+  commit_author_email: "snykrai-bot@users.noreply.github.com"
+
+code_analysis:
+  ignore_confidence: 0.75   # Min LLM confidence to auto-ignore SAST findings
+
+sla:
+  critical: 14
+  high: 30
+  medium: 60
+  low: 180
+
+slack:
+  channel_id_env: "SLACK_CHANNEL_ID"
+  internal_channel: true
+
+orchestrator:
+  max_repos_per_run: 5
+  always_include_aggressive: true
+  sla_breach_threshold_days: 7
+
+repos:
+  # ── Repo config schema ────────────────────────────────────────────────────
+  #
+  # REQUIRED fields (all repos):
+  #   name              Short identifier used in: python run.py fix <name>
+  #   repo              GitHub slug: "org/repo-name"
+  #   ecosystem         npm | maven | gradle | pip | gomodules | nuget | cocoapods | rubygems
+  #   default_branch    Primary branch (usually "main")
+  #   strategy          conservative | aggressive  — see below
+  #   visibility        public | private
+  #
+  # OPTIONAL fields:
+  #   pr_base_branch    PR target branch. Defaults to default_branch.
+  #   skip_tests        true = no test suite. Build gate still runs. Default: false.
+  #   ignore_confidence Min LLM confidence to auto-ignore SAST findings (0.0–1.0).
+  #                     Default: 0.75. Lower (e.g. 0.70) for test/internal repos.
+  #   npm_package_name  Published npm package name (e.g. "@my-org/sdk").
+  #                     Used for upstream cascade analysis.
+  #
+  # STRATEGY GUIDE:
+  #   conservative  → Only direct dependencies with a known fixed_in version are upgraded.
+  #                   Transitive vulnerabilities are REPORTED in the PR body but not patched.
+  #                   Use for: published libraries, packages consumed by other repos.
+  #
+  #   aggressive    → Also pins transitive dependencies using ecosystem-native overrides
+  #                   (npm overrides / Maven dependencyManagement / pip constraints / Go replace).
+  #                   Use for: internal tools, CLIs, private repos with no downstream consumers.
+  #                   REQUIRED: fill in override_rationale below when setting strategy: aggressive.
+  #
+  # AGGRESSIVE-ONLY fields:
+  #   transitive_overrides   true = SnykrAI may pin transitive deps.
+  #   off_limits_packages    List of packages SnykrAI must NEVER touch.
+  #   override_rationale     Decision record for audit trail.
+  #     decided_by           Your name/handle
+  #     decided_on           YYYY-MM-DD
+  #     trigger              upstream_delay | no_upstream_fix | security_critical
+  #     revisit_after        YYYY-MM-DD — check if upstream has caught up by this date
+  #     reason               Free-form explanation (1–2 sentences)
+  #     public_facing        true | false
+  #     has_tests            true | false
+  #
+  # ─────────────────────────────────────────────────────────────────────────
+
+  # Example: Internal automation (aggressive — no downstream consumers)
+  - name: "my-qa-automation"
+    repo: "your-github-org/my-qa-automation"
+    ecosystem: "npm"
+    default_branch: "main"
+    strategy: "aggressive"
+    visibility: "private"
+    ignore_confidence: 0.70
+    transitive_overrides: true
+    skip_tests: false
+    override_rationale:
+      decided_by: "your-handle"
+      decided_on: "2026-01-01"
+      reason: >
+        Internal QA automation repo — no downstream consumers, no public release.
+        Transitive overrides are safe; test suite runs after every fix to verify.
+      public_facing: false
+      has_tests: true
+
+  # Example: Java E2E test framework (aggressive — private, no API surface)
+  - name: "my-e2e-tests"
+    repo: "your-github-org/my-e2e-tests"
+    ecosystem: "maven"
+    default_branch: "main"
+    strategy: "aggressive"
+    visibility: "private"
+    transitive_overrides: true
+    override_rationale:
+      decided_by: "your-handle"
+      decided_on: "2026-01-01"
+      reason: >
+        Java E2E test framework — no production users, no public API surface.
+        Maven dependencyManagement overrides are safe here.
+      public_facing: false
+      has_tests: true
+
+  # Example: Public SDK (conservative — published package, downstream consumers)
+  - name: "my-node-sdk"
+    repo: "your-github-org/my-node-sdk"
+    ecosystem: "npm"
+    default_branch: "main"
+    strategy: "conservative"
+    visibility: "public"
+    npm_package_name: "@your-org/node-sdk"
+
+  # Example: Public CLI tool (conservative + transitive overrides — not a library)
+  - name: "my-cli"
+    repo: "your-github-org/my-cli"
+    ecosystem: "npm"
+    default_branch: "main"
+    strategy: "conservative"
+    visibility: "public"
+    transitive_overrides: true
+    override_rationale:
+      decided_by: "your-handle"
+      decided_on: "2026-01-01"
+      trigger: "upstream_delay"
+      revisit_after: "2026-07-01"
+      reason: >
+        CLI binary — not a published npm library. Overrides are scoped to
+        this tool's install tree only, no downstream impact on consumers.
+      public_facing: false
+      has_tests: true
+
+  # Example: Python service (conservative)
+  - name: "my-python-service"
+    repo: "your-github-org/my-python-service"
+    ecosystem: "pip"
+    default_branch: "main"
+    strategy: "conservative"
+    visibility: "private"
+
+  # Example: Go microservice (aggressive — internal binary)
+  - name: "my-go-service"
+    repo: "your-github-org/my-go-service"
+    ecosystem: "gomodules"
+    default_branch: "main"
+    strategy: "aggressive"
+    visibility: "private"
+    transitive_overrides: true
+    override_rationale:
+      decided_by: "your-handle"
+      decided_on: "2026-01-01"
+      trigger: "upstream_delay"
+      revisit_after: "2026-07-01"
+      reason: >
+        Internal Go microservice — compiled binary, no downstream package consumers.
+        Go replace directives are scoped to this module only.
+      public_facing: false
+      has_tests: true
+
+  # Example: .NET service (conservative)
+  - name: "my-dotnet-api"
+    repo: "your-github-org/my-dotnet-api"
+    ecosystem: "nuget"
+    default_branch: "main"
+    strategy: "conservative"
+    visibility: "private"
+
+  # Example: Android SDK (conservative — published library)
+  - name: "my-android-sdk"
+    repo: "your-github-org/my-android-sdk"
+    ecosystem: "gradle"
+    default_branch: "main"
+    strategy: "conservative"
+    visibility: "public"
+
+auto_discover:
+  enabled: true
+  default_strategy: "conservative"
+  exclude_repos: []
