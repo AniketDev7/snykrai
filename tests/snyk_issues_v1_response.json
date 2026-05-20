@@ -1,0 +1,50 @@
+{
+  "issues": [
+    {
+      "id": "SNYK-JS-BRACEEXPANSION-15789759",
+      "issueType": "vuln",
+      "pkgName": "brace-expansion",
+      "pkgVersions": ["5.0.4"],
+      "issueData": {
+        "id": "SNYK-JS-BRACEEXPANSION-15789759",
+        "title": "Infinite loop",
+        "severity": "high",
+        "url": "https://snyk.io/vuln/SNYK-JS-BRACEEXPANSION-15789759",
+        "identifiers": {
+          "CVE": ["CVE-2026-33750"],
+          "CWE": ["CWE-835"]
+        },
+        "exploitMaturity": "no-known-exploit",
+        "semver": {
+          "vulnerable": [">=3.0.0 <5.0.5"]
+        },
+        "publicationTime": "2026-03-28T06:33:03.419Z",
+        "cvssScore": 7.1,
+        "severities": [
+          {
+            "assigner": "Snyk",
+            "cvssVersion": "4.0",
+            "severity": "high",
+            "baseScore": 7.1
+          }
+        ],
+        "language": "js",
+        "patches": [],
+        "nearestFixedInVersion": "5.0.5",
+        "isMaliciousPackage": false
+      },
+      "isPatched": false,
+      "isIgnored": false,
+      "fixInfo": {
+        "isUpgradable": false,
+        "isPinnable": false,
+        "isPatchable": false,
+        "isFixable": false,
+        "isPartiallyFixable": false,
+        "nearestFixedInVersion": "5.0.5",
+        "fixedIn": ["5.0.5"]
+      },
+      "priorityScore": 485
+    }
+  ]
+}

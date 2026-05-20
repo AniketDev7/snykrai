@@ -1,0 +1,49 @@
+{
+  "jsonapi": {"version": "1.0"},
+  "data": [
+    {
+      "id": "cc166a38-a258-4b41-b356-47630c38f9f4",
+      "type": "issue",
+      "attributes": {
+        "key": "SNYK-JS-BRACEEXPANSION-15789759",
+        "title": "Infinite loop",
+        "status": "open",
+        "effective_severity_level": "high",
+        "type": "package_vulnerability",
+        "created_at": "2026-03-28T06:33:03.419Z",
+        "coordinates": [
+          {
+            "is_upgradeable": false,
+            "is_patchable": false,
+            "is_pinnable": false,
+            "representations": [
+              {
+                "dependency": {
+                  "package_name": "brace-expansion",
+                  "package_version": "5.0.4"
+                }
+              }
+            ]
+          }
+        ],
+        "severities": [
+          {"level": "high", "score": 7.1, "version": "4.0"}
+        ],
+        "classes": [
+          {"id": "CWE-835", "source": "CWE", "type": "weakness"}
+        ],
+        "problems": [
+          {"id": "CVE-2026-33750", "source": "NVD", "type": "vulnerability"}
+        ]
+      },
+      "relationships": {
+        "scan_item": {
+          "data": {"id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "type": "project"}
+        }
+      }
+    }
+  ],
+  "links": {
+    "self": "/rest/orgs/00000000/issues?limit=10&status=open&version=2024-04-29"
+  }
+}
