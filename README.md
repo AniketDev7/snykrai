@@ -38,16 +38,18 @@ SnykrAI connects your Snyk organization to your GitHub repositories and automate
 
 ## Architecture
 
+![AI-Powered Dependency Remediation Pipeline](AI-Powered_Dependency_Remediation_Pipeline.png)
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                          run.py / orchestrator                  │
+│                  run.py / orchestrator                          | 
 │                                                                 │
-│  ┌──────────────┐   ┌──────────────┐   ┌─────────────────────┐ │
-│  │  SnykClient  │   │  OrgAnalyzer │   │    LLMClient        │ │
-│  │  (Snyk API)  │   │  (cascade)   │   │  Claude + Gemini    │ │
-│  └──────┬───────┘   └──────┬───────┘   └──────────┬──────────┘ │
-│         │                  │                       │            │
-│         └──────────────────┼───────────────────────┘           │
+│  ┌──────────────┐   ┌──────────────┐   ┌─────────────────────┐  │
+│  │  SnykClient  │   │  OrgAnalyzer │   │    LLMClient        │  │
+│  │  (Snyk API)  │   │  (cascade)   │   │  Claude + Gemini    │  │
+│  └──────┬───────┘   └──────┬───────┘   └──────────┬──────────┘  │
+│         │                  │                      │             │
+│         └──────────────────┼──────────────────────┘             │
 │                            ▼                                    │
 │                    ┌───────────────┐                            │
 │                    │   SnykFixer   │  per-repo fix pipeline     │
